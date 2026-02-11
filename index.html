@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treinamento/Capacitação Eztec</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --eztec-cereja: #D01139;
+            --eztec-cacau: #350F15;
+            --white-smoke: #F4F4F4;
+            --grey-nickel: #CAC4C4;
+            --fluent-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: var(--white-smoke); 
+            margin: 0; padding: 40px 20px;
+            color: var(--eztec-cacau);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        .simbolo-fixo {
+            position: fixed; bottom: 30px; left: 30px; width: 60px; z-index: 1000;
+        }
+
+        .card { 
+            background: #fff; padding: 40px; border-radius: 8px;
+            box-shadow: var(--fluent-shadow); max-width: 680px; width: 100%;
+            border-top: 4px solid var(--eztec-cereja);
+        }
+
+        .header-logo { text-align: center; margin-bottom: 30px; }
+        .header-logo img { max-width: 180px; }
+
+        h2 { font-weight: 600; font-size: 20px; text-align: center; margin-bottom: 30px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #555; }
+
+        /* Estilo Fluent */
+        input, select { 
+            width: 100%; padding: 12px; 
+            border: 1px solid var(--grey-nickel); border-bottom: 2px solid var(--grey-nickel);
+            border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px;
+            transition: all 0.2s; outline: none; background: #fff;
+        }
+
+        input:focus, select:focus {
+            border-bottom-color: var(--eztec-cereja);
+            box-shadow: 0 4px 6px -1px rgba(208, 17, 57, 0.1);
+        }
+
+        button { 
+            width: 100%; padding: 16px; background-color: var(--eztec-cereja); color: white; 
+            border: none; border-radius: 4px; font-weight: 600; cursor: pointer; 
+            margin-top: 30px; transition: 0.3s;
+        }
+
+        button:hover { background-color: var(--eztec-cacau); transform: translateY(-1px); }
+
+        #mensagem { text-align: center; margin-top: 20px; font-weight: 600; }
+
+        /* Ajustes Calendário Flatpickr */
+        .flatpickr-day.selected { background: var(--eztec-cereja) !important; border-color: var(--eztec-cereja) !important; }
+    </style>
+</head>
+<body>
+
+    <img src="image_b63afa.png" alt="Símbolo Eztec" class="simbolo-fixo">
+
+    <div class="card">
+        <div class="header-logo">
+            <img src="Logo_Eztec_Cereja.png" alt="Logo Eztec">
+        </div>
+
+        <h2>Treinamento / Capacitação</h2>
+        
+        <form id="formulario">
+            <div class="grid">
+                <div class="field full-width">
+                    <label for="Nome">Nome completo</label>
+                    <input type="text" id="Nome" placeholder="Digite seu nome" required>
+                </div>
+                
+                <div class="field">
+                    <label for="Departamento">Departamento</label>
+                    <input type="text" id="Departamento" list="listaDepto" placeholder="Buscar no Oracle..." autocomplete="off">
+                    <datalist id="listaDepto"></datalist>
+                </div>
+
+                <div class="field">
+                    <label for="Cargo">Cargo</label>
+                    <input type="text" id="Cargo">
+                </div>
+
+                <div class="field">
+                    <label for="Diretoria">Diretoria</label>
+                    <select id="Diretoria" required>
+                        <option value="" disabled selected>Carregando diretorias...</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="Divisao">Divisão</label>
+                    <select id="Divisao" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="Escritório">Escritório</option>
+                        <option value="Obra">Obra</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="DataInicio">Data início</label>
+                    <input type="text" id="DataInicio" class="datepicker" placeholder="Selecione">
+                </div>
+                <div class="field">
+                    <label for="DataFim">Data fim</label>
+                    <input type="text" id="DataFim" class="datepicker" placeholder="Selecione">
+                </div>
+
+                <div class="field">
+                    <label for="HoraInicio">Hora início</label>
+                    <input type="text" id="HoraInicio" class="timepicker" placeholder="00:00">
+                </div>
+                <div class="field">
+                    <label for="HoraFim">Hora fim</label>
+                    <input type="text" id="HoraFim" class="timepicker" placeholder="00:00">
+                </div>
+
+                <div class="field full-width">
+                    <label for="Fornecedor">Fornecedor / facilitador</label>
+                    <input type="text" id="Fornecedor">
+                </div>
+            </div>
+            
+            <button type="submit">Registrar inscrição</button>
+        </form>
+        <div id="mensagem"></div>
+    </div>
+
+    <script>
+        // 1. Configuração Supabase
+        const SUPABASE_URL = "https://udmpjsxhspgfonzyeard.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_jODPibc9Km9xP2QmJ-08cA_sM75Zzsb";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. Inicializar Flatpickr (Data e Hora Dinâmicos)
+        flatpickr(".datepicker", { locale: "pt", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
+        flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
+
+        // 3. Função para carregar Diretorias da tabela DM_Diretoria
+        async function carregarDiretorias() {
+            const selectDiretoria = document.getElementById('Diretoria');
+            try {
+                const { data, error } = await supabaseClient
+                    .from('DM_Diretoria')
+                    .select('Diretoria')
+                    .order('Diretoria', { ascending: true });
+
+                if (error) throw error;
+
+                selectDiretoria.innerHTML = '<option value="" disabled selected>Selecione a diretoria</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.Diretoria;
+                    option.textContent = item.Diretoria;
+                    selectDiretoria.appendChild(option);
+                });
+            } catch (err) {
+                console.error("Erro ao carregar diretorias:", err);
+                selectDiretoria.innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+
+        // Chamar função ao carregar a página
+        carregarDiretorias();
+
+        // 4. Lógica de Envio
+        const form = document.getElementById('formulario');
+        const msgStatus = document.getElementById('mensagem');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msgStatus.innerText = "⏳ PROCESSANDO...";
+            
+            const dados = {
+                "Nome": document.getElementById('Nome').value,
+                "Departamento": document.getElementById('Departamento').value,
+                "Cargo": document.getElementById('Cargo').value,
+                "Diretoria": document.getElementById('Diretoria').value,
+                "Divisão": document.getElementById('Divisao').value,
+                "DataInicio": document.getElementById('DataInicio').value,
+                "DataFim": document.getElementById('DataFim').value,
+                "HoraInicio": document.getElementById('HoraInicio').value,
+                "HoraFim": document.getElementById('HoraFim').value,
+                "Fornecedor/Facilitador": document.getElementById('Fornecedor').value
+            };
+
+            const { error } = await supabaseClient.from('FT_Treinamentos').insert([dados]);
+            if (error) {
+                msgStatus.innerText = "❌ Erro ao enviar.";
+                msgStatus.style.color = "var(--eztec-cereja)";
+            } else {
+                msgStatus.innerText = "✅ INSCRIÇÃO REALIZADA!";
+                msgStatus.style.color = "green";
+                form.reset();
+                carregarDiretorias(); // Recarrega o select
+            }
+        });
+    </script>
+</body>
+</html>
