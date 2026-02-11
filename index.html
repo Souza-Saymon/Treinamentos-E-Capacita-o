@@ -17,43 +17,60 @@
             --eztec-cacau: #350F15;
             --white-smoke: #F4F4F4;
             --grey-nickel: #CAC4C4;
-            --fluent-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --fluent-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
 
         body { 
             font-family: 'Sarabun', sans-serif; 
             background-color: var(--white-smoke); 
-            margin: 0; padding: 40px 20px;
+            margin: 0; padding: 20px;
             color: var(--eztec-cacau);
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
         }
 
+        /* Símbolo Responsivo Canto Inferior */
         .simbolo-fixo {
-            position: fixed; bottom: 30px; left: 30px; width: 60px; z-index: 1000;
+            position: fixed; bottom: 20px; left: 20px; 
+            width: 50px; height: auto; z-index: 1000;
         }
 
         .card { 
-            background: #fff; padding: 40px; border-radius: 8px;
+            background: #ffffff; padding: 40px; border-radius: 8px;
             box-shadow: var(--fluent-shadow); max-width: 680px; width: 100%;
-            border-top: 4px solid var(--eztec-cereja);
+            border-top: 5px solid var(--eztec-cereja);
+            box-sizing: border-box;
         }
 
         .header-logo { text-align: center; margin-bottom: 30px; }
-        .header-logo img { max-width: 180px; }
+        .header-logo img { max-width: 180px; width: 100%; height: auto; }
 
         h2 { font-weight: 600; font-size: 20px; text-align: center; margin-bottom: 30px; }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .full-width { grid-column: span 2; }
+        /* GRID RESPONSIVO */
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* 2 colunas no Desktop */
+            gap: 20px; 
+        }
+
+        /* AJUSTE PARA TELEMÓVEL */
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; } /* 1 coluna no Mobile */
+            .card { padding: 25px 15px; }
+            .simbolo-fixo { width: 40px; bottom: 10px; left: 10px; }
+            body { padding: 10px; }
+        }
 
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #555; }
 
-        /* Estilo Fluent */
         input, select { 
             width: 100%; padding: 12px; 
-            border: 1px solid var(--grey-nickel); border-bottom: 2px solid var(--grey-nickel);
-            border-radius: 4px; font-family: 'Sarabun', sans-serif; font-size: 14px;
+            border: 1px solid var(--grey-nickel); 
+            border-bottom: 2px solid var(--grey-nickel);
+            border-radius: 4px; font-family: 'Sarabun', sans-serif; 
+            font-size: 16px; /* 16px evita zoom indesejado no iPhone */
             transition: all 0.2s; outline: none; background: #fff;
+            box-sizing: border-box;
         }
 
         input:focus, select:focus {
@@ -62,16 +79,17 @@
         }
 
         button { 
-            width: 100%; padding: 16px; background-color: var(--eztec-cereja); color: white; 
-            border: none; border-radius: 4px; font-weight: 600; cursor: pointer; 
-            margin-top: 30px; transition: 0.3s;
+            width: 100%; padding: 18px; background-color: var(--eztec-cereja); color: white; 
+            border: none; border-radius: 4px; font-weight: 700; cursor: pointer; 
+            margin-top: 30px; transition: 0.3s; font-size: 16px;
+            text-transform: uppercase;
         }
 
         button:hover { background-color: var(--eztec-cacau); transform: translateY(-1px); }
 
-        #mensagem { text-align: center; margin-top: 20px; font-weight: 600; }
+        #mensagem { text-align: center; margin-top: 20px; font-weight: 600; font-size: 14px; }
 
-        /* Ajustes Calendário Flatpickr */
+        /* Estilo Flatpickr Cereja */
         .flatpickr-day.selected { background: var(--eztec-cereja) !important; border-color: var(--eztec-cereja) !important; }
     </style>
 </head>
@@ -90,12 +108,12 @@
             <div class="grid">
                 <div class="field full-width">
                     <label for="Nome">Nome completo</label>
-                    <input type="text" id="Nome" placeholder="Digite seu nome" required>
+                    <input type="text" id="Nome" placeholder="Seu nome" required>
                 </div>
                 
                 <div class="field">
                     <label for="Departamento">Departamento</label>
-                    <input type="text" id="Departamento" list="listaDepto" placeholder="Buscar no Oracle..." autocomplete="off">
+                    <input type="text" id="Departamento" list="listaDepto" placeholder="Buscar..." autocomplete="off">
                     <datalist id="listaDepto"></datalist>
                 </div>
 
@@ -107,7 +125,7 @@
                 <div class="field">
                     <label for="Diretoria">Diretoria</label>
                     <select id="Diretoria" required>
-                        <option value="" disabled selected>Carregando diretorias...</option>
+                        <option value="" disabled selected>A carregar...</option>
                     </select>
                 </div>
 
@@ -144,7 +162,7 @@
                 </div>
             </div>
             
-            <button type="submit">Registrar inscrição</button>
+            <button type="submit">Finalizar inscrição</button>
         </form>
         <div id="mensagem"></div>
     </div>
@@ -155,44 +173,52 @@
         const SUPABASE_KEY = "sb_publishable_jODPibc9Km9xP2QmJ-08cA_sM75Zzsb";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 2. Inicializar Flatpickr (Data e Hora Dinâmicos)
+        // 2. Flatpickr (Calendário e Hora)
         flatpickr(".datepicker", { locale: "pt", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
         flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
 
-        // 3. Função para carregar Diretorias da tabela DM_Diretoria
+        // 3. Carregar Diretorias dinamicamente do Supabase
         async function carregarDiretorias() {
-            const selectDiretoria = document.getElementById('Diretoria');
-            try {
-                const { data, error } = await supabaseClient
-                    .from('DM_Diretoria')
-                    .select('Diretoria')
-                    .order('Diretoria', { ascending: true });
-
-                if (error) throw error;
-
-                selectDiretoria.innerHTML = '<option value="" disabled selected>Selecione a diretoria</option>';
+            const select = document.getElementById('Diretoria');
+            const { data, error } = await supabaseClient.from('DM_Diretoria').select('Diretoria').order('Diretoria');
+            if (!error) {
+                select.innerHTML = '<option value="" disabled selected>Selecione a diretoria</option>';
                 data.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.Diretoria;
-                    option.textContent = item.Diretoria;
-                    selectDiretoria.appendChild(option);
+                    let opt = document.createElement('option');
+                    opt.value = item.Diretoria;
+                    opt.textContent = item.Diretoria;
+                    select.appendChild(opt);
                 });
-            } catch (err) {
-                console.error("Erro ao carregar diretorias:", err);
-                selectDiretoria.innerHTML = '<option value="">Erro ao carregar</option>';
             }
         }
-
-        // Chamar função ao carregar a página
         carregarDiretorias();
 
-        // 4. Lógica de Envio
+        // 4. Lógica de Departamento (Oracle Local via Flask)
+        const inputDepto = document.getElementById('Departamento');
+        const dataListDepto = document.getElementById('listaDepto');
+        inputDepto.addEventListener('input', async (e) => {
+            const valor = e.target.value;
+            if (valor.length >= 2) {
+                try {
+                    const response = await fetch(`http://localhost:5000/buscar?q=${valor}`);
+                    const departamentos = await response.json();
+                    dataListDepto.innerHTML = "";
+                    departamentos.forEach(depto => {
+                        const option = document.createElement('option');
+                        option.value = depto;
+                        dataListDepto.appendChild(option);
+                    });
+                } catch (err) { console.error(err); }
+            }
+        });
+
+        // 5. Envio para o Supabase
         const form = document.getElementById('formulario');
         const msgStatus = document.getElementById('mensagem');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            msgStatus.innerText = "⏳ PROCESSANDO...";
+            msgStatus.innerText = "⏳ A PROCESSAR...";
             
             const dados = {
                 "Nome": document.getElementById('Nome').value,
@@ -209,13 +235,12 @@
 
             const { error } = await supabaseClient.from('FT_Treinamentos').insert([dados]);
             if (error) {
-                msgStatus.innerText = "❌ Erro ao enviar.";
+                msgStatus.innerText = "❌ Erro ao enviar registro.";
                 msgStatus.style.color = "var(--eztec-cereja)";
             } else {
-                msgStatus.innerText = "✅ INSCRIÇÃO REALIZADA!";
+                msgStatus.innerText = "✅ INSCRIÇÃO REALIZADA COM SUCESSO!";
                 msgStatus.style.color = "green";
                 form.reset();
-                carregarDiretorias(); // Recarrega o select
             }
         });
     </script>
