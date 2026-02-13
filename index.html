@@ -28,7 +28,6 @@
             display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
         }
 
-        /* Símbolo Responsivo Canto Inferior */
         .simbolo-fixo {
             position: fixed; bottom: 20px; left: 20px; 
             width: 50px; height: auto; z-index: 1000;
@@ -46,16 +45,14 @@
 
         h2 { font-weight: 600; font-size: 20px; text-align: center; margin-bottom: 30px; }
 
-        /* GRID RESPONSIVO */
         .grid { 
             display: grid; 
-            grid-template-columns: 1fr 1fr; /* 2 colunas no Desktop */
+            grid-template-columns: 1fr 1fr; 
             gap: 20px; 
         }
 
-        /* AJUSTE PARA TELEMÓVEL */
         @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; } /* 1 coluna no Mobile */
+            .grid { grid-template-columns: 1fr; } 
             .card { padding: 25px 15px; }
             .simbolo-fixo { width: 40px; bottom: 10px; left: 10px; }
             body { padding: 10px; }
@@ -68,7 +65,7 @@
             border: 1px solid var(--grey-nickel); 
             border-bottom: 2px solid var(--grey-nickel);
             border-radius: 4px; font-family: 'Sarabun', sans-serif; 
-            font-size: 16px; /* 16px evita zoom indesejado no iPhone */
+            font-size: 16px; 
             transition: all 0.2s; outline: none; background: #fff;
             box-sizing: border-box;
         }
@@ -89,7 +86,6 @@
 
         #mensagem { text-align: center; margin-top: 20px; font-weight: 600; font-size: 14px; }
 
-        /* Estilo Flatpickr Cereja */
         .flatpickr-day.selected { background: var(--eztec-cereja) !important; border-color: var(--eztec-cereja) !important; }
     </style>
 </head>
@@ -112,9 +108,9 @@
                 </div>
                 
                 <div class="field">
-                    <label for="Departamento">Departamento</label>
-                    <input type="text" id="Departamento" list="listaDepto" placeholder="Buscar..." autocomplete="off">
-                    <datalist id="listaDepto"></datalist>
+                    <label for="CentroCusto">Centro de custo</label>
+                    <input type="text" id="CentroCusto" list="listaCC" placeholder="Buscar centro de custo..." autocomplete="off">
+                    <datalist id="listaCC"></datalist>
                 </div>
 
                 <div class="field">
@@ -125,7 +121,7 @@
                 <div class="field">
                     <label for="Diretoria">Diretoria</label>
                     <select id="Diretoria" required>
-                        <option value="" disabled selected>A carregar...</option>
+                        <option value="" disabled selected>Carregando...</option>
                     </select>
                 </div>
 
@@ -168,16 +164,14 @@
     </div>
 
     <script>
-        // 1. Configuração Supabase
         const SUPABASE_URL = "https://udmpjsxhspgfonzyeard.supabase.co";
         const SUPABASE_KEY = "sb_publishable_jODPibc9Km9xP2QmJ-08cA_sM75Zzsb";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 2. Flatpickr (Calendário e Hora)
         flatpickr(".datepicker", { locale: "pt", dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
         flatpickr(".timepicker", { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true });
 
-        // 3. Carregar Diretorias dinamicamente do Supabase
+        // 1. Carregar Diretorias (Supabase)
         async function carregarDiretorias() {
             const select = document.getElementById('Diretoria');
             const { data, error } = await supabaseClient.from('DM_Diretoria').select('Diretoria').order('Diretoria');
@@ -193,36 +187,46 @@
         }
         carregarDiretorias();
 
-        // 4. Lógica de Departamento (Oracle Local via Flask)
-        const inputDepto = document.getElementById('Departamento');
-        const dataListDepto = document.getElementById('listaDepto');
-        inputDepto.addEventListener('input', async (e) => {
-            const valor = e.target.value;
-            if (valor.length >= 2) {
+        // 2. BUSCA DINÂMICA CENTRO DE CUSTO (Direto no Supabase)
+        const inputCC = document.getElementById('CentroCusto');
+        const dataListCC = document.getElementById('listaCC');
+
+        inputCC.addEventListener('input', async (e) => {
+            const termo = e.target.value;
+            if (termo.length >= 2) {
                 try {
-                    const response = await fetch(`http://localhost:5000/buscar?q=${valor}`);
-                    const departamentos = await response.json();
-                    dataListDepto.innerHTML = "";
-                    departamentos.forEach(depto => {
+                    // Busca na tabela DM_CentroCusto onde a coluna Centro_Custo contém o termo
+                    const { data, error } = await supabaseClient
+                        .from('DM_CentroCusto')
+                        .select('Centro_Custo')
+                        .ilike('Centro_Custo', `%${termo}%`)
+                        .limit(10);
+
+                    if (error) throw error;
+
+                    dataListCC.innerHTML = "";
+                    data.forEach(item => {
                         const option = document.createElement('option');
-                        option.value = depto;
-                        dataListDepto.appendChild(option);
+                        option.value = item.Centro_Custo;
+                        dataListCC.appendChild(option);
                     });
-                } catch (err) { console.error(err); }
+                } catch (err) {
+                    console.error("Erro ao buscar Centro de Custo:", err);
+                }
             }
         });
 
-        // 5. Envio para o Supabase
+        // 3. Envio do Formulário
         const form = document.getElementById('formulario');
         const msgStatus = document.getElementById('mensagem');
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            msgStatus.innerText = "⏳ A PROCESSAR...";
+            msgStatus.innerText = "⏳ PROCESSANDO...";
             
             const dados = {
                 "Nome": document.getElementById('Nome').value,
-                "Departamento": document.getElementById('Departamento').value,
+                "Departamento": document.getElementById('CentroCusto').value, // Agora mapeado para o CC
                 "Cargo": document.getElementById('Cargo').value,
                 "Diretoria": document.getElementById('Diretoria').value,
                 "Divisão": document.getElementById('Divisao').value,
